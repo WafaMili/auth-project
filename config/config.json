@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "wafa",
+    "password": "123456",
+    "database": "mydatabase",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "wafa",
+    "password": "123456",
+    "database": "mydatabase",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "wafa",
+    "password": "123456",
+    "database": "mydatabase",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}

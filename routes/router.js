@@ -1,18 +1,19 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Token = require('../models/Token');
 
 const Router = (fastify, options, done) => {
   
   fastify.post('/register', async (req, res) => {
-    const { name, email, password, telephone } = req.body;
+    const { full_name, email, password, telephone } = req.body;
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await User.create({
-        name,
+        full_name,
         email,
         password: hashedPassword,
-        telephone
+        telephone,
       });
       res.code(201).send({ message: 'User registered successfully', user: newUser });
     } catch (error) {
@@ -20,7 +21,6 @@ const Router = (fastify, options, done) => {
     }
   });
 
- 
   fastify.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -34,12 +34,41 @@ const Router = (fastify, options, done) => {
         return res.code(401).send({ error: 'Invalid password' });
       }
 
-      const token = jwt.sign({ id: user.id }, 'lkhhjcxtsrtfb215', { expiresIn: '1h' });
-      res.code(200).send({ message: 'Login successful', token });
+       const accessToken = jwt.sign({ id: user.id }, 'mkljbhghvbkjcghjklmlkjhghj', { expiresIn: '15m' });
+     
+      const refreshToken = jwt.sign({ id: user.id }, 'kjhvcxcfghjkjhgghjkllkjhgvc', { expiresIn: '7d' });
+
+       await Token.create({ token: refreshToken, refreshToken, userId: user.id });
+
+      res.code(200).send({ message: 'Login successful', accessToken, refreshToken });
     } catch (error) {
       res.code(500).send({ error: 'Login failed', details: error });
     }
   });
+
+  fastify.post('/refresh-token', async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.code(401).send({ error: 'Refresh token is required' });
+    }
+
+    try {
+      const decoded = jwt.verify(refreshToken, 'kjhvcxcfghjkjhgghjkllkjhgvc');
+      
+      
+      const token = await Token.findOne({ where: { refreshToken } });
+      if (!token) {
+        return res.code(403).send({ error: 'Invalid refresh token' });
+      }
+       const accessToken = jwt.sign({ id: decoded.id }, 'mkljbhghvbkjcghjklmlkjhghj', { expiresIn: '1h' });
+
+      res.code(200).send({ accessToken });
+    } catch (error) {
+      res.code(403).send({ error: 'Invalid refresh token', details: error });
+    }
+  });
+
+
 
   done();
 };

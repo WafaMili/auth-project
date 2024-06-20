@@ -7,11 +7,12 @@ fastify.register(require('./routes/router'));
 
 const start = async () => {
   try {
-    await sequelize.authenticate();
-    console.log('Connection  successfully.');
-    await sequelize.sync(); 
     await fastify.listen({ port: PORT });
     console.log(`Server is running on port ${PORT}`);
+    await sequelize.authenticate();
+    console.log('Connection  successfully.');
+    // await sequelize.sync(); 
+    
   } catch (error) {
     console.error('Unable to connect to the database:', error);
     fastify.log.error(error);
