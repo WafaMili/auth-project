@@ -1,7 +1,7 @@
 const fastify = require('fastify')({ logger: true });
 const sequelize = require('./config/database');
 const User = require('./models/User');
-
+const createInitialData = require('./createInitialData');
 const PORT = 3000;
 fastify.register(require('./routes/router'));
 
@@ -12,7 +12,7 @@ const start = async () => {
     await sequelize.authenticate();
     console.log('Connection  successfully.');
     // await sequelize.sync(); 
-    
+    await createInitialData();
   } catch (error) {
     console.error('Unable to connect to the database:', error);
     fastify.log.error(error);
